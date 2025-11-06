@@ -5,62 +5,104 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
 UID:11007825@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250206T173000Z
+DTEND:20250206T183000Z
 SUMMARY:Student Government Meeting
-DESCRIPTION:<p>The Fairmont State University Student Government Association (SGA) holds regular meetings to discuss campus initiatives\, student concerns\, and upcoming events that impact the university community. These meetings provide a platform for student leaders to collaborate\, advocate for their peers\, and work alongside faculty\, staff\, and administrators to enhance the student experience.&nbsp\;</p>
+DESCRIPTION:The Fairmont State University Student Government Association (SGA) holds regular meetings to discuss campus initiatives\, student concerns\, and upcoming events that impact the university community. These meetings provide a platform for student leaders to collaborate\, advocate for their peers\, and work alongside faculty\, staff\, and administrators to enhance the student experience.
+LOCATION:Hardway Hall Room 128\, 1201 Locust Ave\, Fairmont\, WV
+URL:https://static.campuslabsengage.com/discovery/images/events/groupbusiness.jpg
+STATUS:CANCELLED
 END:VEVENT
 BEGIN:VEVENT
 UID:11050609@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250210T210000Z
+DTEND:20250210T220000Z
 SUMMARY:DIY Hanging Essential Oil Bottles 
-DESCRIPTION:<p>Come out to Falcon Center Main Street and create your own Hanging Essential Oil bottle.&nbsp\;</p>
+DESCRIPTION:Come out to Falcon Center Main Street and create your own Hanging Essential Oil bottle.
+LOCATION:Falcon Center\, 1201 Locust Ave\, Fairmont\, WV
+URL:https://se-images.campuslabs.com/clink/images/02934a55-e2e0-485b-8cff-9fe364607b9c0a1294e4-8ab2-4071-86f2-e58dd4140bcf.png
+STATUS:CANCELLED
 END:VEVENT
 BEGIN:VEVENT
 UID:11091784@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250306T150000Z
+DTEND:20250306T200000Z
 SUMMARY:Test Event
-DESCRIPTION:<p>Testing Check In&nbsp\;</p>
+DESCRIPTION:Testing Check In
+LOCATION:Falcon Center Quad\, 1201 Locust Ave\, Fairmont\, WV
+URL:https://static.campuslabsengage.com/discovery/images/events/social.jpg
 END:VEVENT
 BEGIN:VEVENT
 UID:11144799@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250307T170000Z
+DTEND:20250307T210000Z
 SUMMARY:Liquid Nitrogen Ice Cream
-DESCRIPTION:<p>The process is simple: we put cream in a bowl\, add the ingredients\, and the blast it with liquid nitrogen. Beautiful clouds of vapor billow from the bowl\, roll across the table and cascade over the edge. The liquid nitrogen freezes it so fast that the ice crystals don&rsquo\;t get a chance to grow and the resulting ice cream is the smoothest\, creamiest and freshest you&rsquo\;ll ever experience. It is amazing to watch and tastes incredible. Private Island Ice Cream isn&rsquo\;t just ice cream\, it&rsquo\;s ice cream with a show!</p>
+DESCRIPTION:The process is simple: we put cream in a bowl\, add the ingredients\, and the blast it with liquid nitrogen. Beautiful clouds of vapor billow from the bowl\, roll across the table and cascade over the edge. The liquid nitrogen freezes it so fast that the ice crystals don’t get a chance to grow and the resulting ice cream is the smoothest\, creamiest and freshest you’ll ever experience. It is amazing to watch and tastes incredible. Private Island Ice Cream isn’t just ice cream\, it’s ice cream with a show!
+LOCATION:Falcon Center Main Street\, 1201 Locust Ave\, Fairmont\, WV
+URL:https://se-images.campuslabs.com/clink/images/7e32aff7-5743-44e5-b3b1-500440567158cbfaf7dd-3790-4ba2-abe8-117d28b47970.png
 END:VEVENT
 BEGIN:VEVENT
 UID:11152127@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250329T000000Z
+DTEND:20250329T040000Z
 SUMMARY:Casino City 
-DESCRIPTION:<p>Get ready for the ultimate high-stakes experience at <strong data-start="85" data-end="113">Casino City Extravaganza</strong>! Step into a world of glamour\, excitement\, and non-stop entertainment as we bring the thrill of Vegas to your Fairmont State University! Whether you&rsquo\;re a seasoned player or a first-time visitor\, enjoy a dazzling night filled with poker\, blackjack\, roulette\, and more!&nbsp\;</p>
+DESCRIPTION:Get ready for the ultimate high-stakes experience at Casino City Extravaganza! Step into a world of glamour\, excitement\, and non-stop entertainment as we bring the thrill of Vegas to your Fairmont State University! Whether you’re a seasoned player or a first-time visitor\, enjoy a dazzling night filled with poker\, blackjack\, roulette\, and more!
+LOCATION:Turley Center\, 1201 Locust Ave\, Fairmont\, WV
+URL:https://se-images.campuslabs.com/clink/images/58ded752-dcf4-4fef-a8c7-85a9ee6e7d9de7c77f74-eac0-4b56-9ecb-02eba578195a.png
 END:VEVENT
 BEGIN:VEVENT
 UID:11157141@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250311T150000Z
+DTEND:20250311T170000Z
 SUMMARY:DIY Air Fresheners 
-DESCRIPTION:<p>Create your own air freshener!&nbsp\;</p>
+DESCRIPTION:Create your own air freshener!
+LOCATION:Falcon Center\, 1201 Locust Ave\, Fairmont\, WV
+URL:https://static.campuslabsengage.com/discovery/images/events/social.jpg
 END:VEVENT
 BEGIN:VEVENT
 UID:11187528@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250405T010000Z
+DTEND:20250405T020000Z
 SUMMARY:ThinkFast Trivia
-DESCRIPTION:<p>Get ready to put your brain to the test with ThinkFast Trivia! Challenge yourself with fun and exciting questions\, show off your knowledge\, and race against the clock for a chance to win big. The top trivia master walks away with an impressive $200.00 prize. Are you quick enough to ThinkFast and claim the victory? Dive into the game and find out! 🧠💡💰</p>
+DESCRIPTION:Get ready to put your brain to the test with ThinkFast Trivia! Challenge yourself with fun and exciting questions\, show off your knowledge\, and race against the clock for a chance to win big. The top trivia master walks away with an impressive $200.00 prize. Are you quick enough to ThinkFast and claim the victory? Dive into the game and find out! 🧠💡💰
+LOCATION:Falcon Center\, 1201 Locust Ave\, Fairmont \, West Virginia
+URL:https://se-images.campuslabs.com/clink/images/a7af7f16-1d25-472f-a6df-bf952d1b50f054062c99-5ab1-487f-975f-f2565531027a.png
 END:VEVENT
 BEGIN:VEVENT
 UID:11200308@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250207T160000Z
+DTEND:20250207T190000Z
 SUMMARY:Essential Oil Bottles 
-DESCRIPTION:<p>Stress Less week-making Essential Oil Bottles.</p>
+DESCRIPTION:Stress Less week-making Essential Oil Bottles.
+LOCATION:Falcon Center\, 1201 Locust Ave\, Fairmont \, We
+URL:https://static.campuslabsengage.com/discovery/images/events/social.jpg
 END:VEVENT
 BEGIN:VEVENT
 UID:11200319@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250206T160000Z
+DTEND:20250325T170000Z
 SUMMARY:Stress Ball Event
-DESCRIPTION:<p>Making stress Balls</p>
+DESCRIPTION:Making stress Balls
+LOCATION:Falcon Center\, 1201 Locust Ave\, Fairmont \, We
+URL:https://static.campuslabsengage.com/discovery/images/events/service.jpg
 END:VEVENT
 BEGIN:VEVENT
 UID:11200380@fairmontstate.edu
-DTSTAMP:20251106T231136Z
+DTSTAMP:20251106T231430Z
+DTSTART:20250203T160000Z
+DTEND:20250203T180000Z
 SUMMARY:Don't Crumbl Under Stress
-DESCRIPTION:<p>Free Crumbl Cookies!</p>
+DESCRIPTION:Free Crumbl Cookies!
+LOCATION:Falcon Center Main Street\, 1201 Locust Ave\, Fairmont \, We
+URL:https://static.campuslabsengage.com/discovery/images/events/social.jpg
 END:VEVENT
 END:VCALENDAR
