@@ -82,27 +82,17 @@ def fetch_events():
     }
 
     resp = requests.get(API_URL, headers=headers, timeout=30)
-    
-    # Print debugging information to GitHub Actions logs
+
     print("Status code:", resp.status_code)
     print("Response snippet:", resp.text[:500])
 
     resp.raise_for_status()
     data = resp.json()
 
-    # Engage wraps results several layers deep.
-    # Schema:
-    # {
-    #   "result": {
-    #       "data": [ ...events... ],
-    #       "page": 1,
-    #       "pageSize": 20
-    #   }
-    # }
-    if isinstance(data, dict) and "result" in data:
-        result = data["result"]
-        if isinstance(result, dict) and "data" in result:
-            return result["data"]
+    # Your endpoint returns:
+    # { skip, take, totalItems, items: [...] }
+    if isinstance(data, dict) and "items" in data:
+        return data["items"]
 
     # Fallback
     return data
