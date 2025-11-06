@@ -1,84 +1,135 @@
 import os
-import json
 import requests
+import re
+from html import unescape
 from datetime import datetime, timezone
 from dateutil import parser
 
 OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "docs/calendar.ics")
-API_URL = os.environ.get("ENGAGE_API_URL")           # e.g., https://api.example.edu/engage/events
-API_KEY = os.environ.get("ENGAGE_API_KEY", "")       # if your API requires a bearer/token key
-TIMEZONE_HINT = os.environ.get("TIMEZONE_HINT", "UTC")  # optional; used only for logging
+API_URL = os.environ.get("ENGAGE_API_URL")        # Full Engage URL with query params
+API_KEY = os.environ.get("ENGAGE_API_KEY", "")   # X-Engage-Api-Key
+TIMEZONE_HINT = os.environ.get("TIMEZONE_HINT", "UTC")
+
+
+# --------------------------------------------------------------------------
+# Utility Functions
+# --------------------------------------------------------------------------
 
 def zulu(dt_str):
-    """Convert an ISO-like string to UTC Zulu (YYYYMMDDTHHMMSSZ)."""
+    """Convert Engage ISO timestamps to UTC Zulu format."""
     if not dt_str:
         return None
     dt = parser.isoparse(dt_str)
     if dt.tzinfo is None:
-        # Treat naive times as UTC if the API returns naive values.
         dt = dt.replace(tzinfo=timezone.utc)
     dt_utc = dt.astimezone(timezone.utc)
     return dt_utc.strftime("%Y%m%dT%H%M%SZ")
 
+
 def escape_ical(text):
-    """Escape characters that iCal requires to be escaped."""
+    """Escape special iCal characters."""
     if not text:
         return ""
     return (
-        text
-        .replace("\\", "\\\\")
-        .replace(",", "\\,")
-        .replace(";", "\\;")
-        .replace("\n", "\\n")
+        text.replace("\\", "\\\\")
+            .replace(",", "\\,")
+            .replace(";", "\\;")
+            .replace("\n", "\\n")
     )
 
-import re
-from html import unescape
 
 def strip_html(html):
-    """Remove HTML tags & decode entities."""
+    """Remove HTML, decode entities, and strip emojis."""
     if not html:
         return ""
-    # Remove tags
-    text = re.sub(r'<[^>]+>', '', html)
-    # Decode HTML entities (&nbsp;, etc.)
-    return unescape(text).strip()
 
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', html)
+    text = unescape(text)
+
+    # Remove emojis and non-ASCII characters (Google Calendar requirement)
+    text = text.encode('ascii', 'ignore').decode()
+
+    # Collapse whitespace
+    return " ".join(text.split()).strip()
+
+
+# --------------------------------------------------------------------------
+# Fetch All Pages of Events from Engage
+# --------------------------------------------------------------------------
+
+def fetch_all_events():
+    """Engage paginates: skip, take, totalItems. We fetch all pages."""
+    headers = {
+        "accept": "application/json",
+        "X-Engage-Api-Key": API_KEY
+    }
+
+    events = []
+    skip = 0
+    take = 50   # You can adjust; 50 is safe
+
+    while True:
+        paged_url = f"{API_URL}&skip={skip}&take={take}"
+
+        resp = requests.get(paged_url, headers=headers, timeout=30)
+        print(f"Fetching: skip={skip}, status={resp.status_code}")
+
+        if resp.status_code != 200:
+            print("Response snippet:", resp.text[:500])
+            resp.raise_for_status()
+
+        data = resp.json()
+
+        items = data.get("items", [])
+        events.extend(items)
+
+        total = data.get("totalItems", len(items))
+        skip += take
+
+        if skip >= total:
+            break
+
+    print(f"Fetched {len(events)} events total.")
+    return events
+
+
+# --------------------------------------------------------------------------
+# Create VEVENT Blocks
+# --------------------------------------------------------------------------
 
 def to_vevent(e):
-    eid     = e.get("id")
-    title   = e.get("name") or ""
-    desc    = strip_html(e.get("description") or "")
-    start   = e.get("startsOn")
-    end     = e.get("endsOn")
+    eid   = e.get("id")
+    title = e.get("name") or ""
+    desc  = strip_html(e.get("description") or "")
+    start = e.get("startsOn")
+    end   = e.get("endsOn")
 
-    # location: use the Engage address block
+    # LOCATION formatting
     address = e.get("address") or {}
-    location_name = address.get("name")
-    location_addr = address.get("address")
-    loc = ""
-    if location_name and location_addr:
-        loc = f"{location_name}, {location_addr}"
-    elif location_name:
-        loc = location_name
-    elif location_addr:
-        loc = location_addr
+    name = address.get("name")
+    addr = address.get("address")
 
-    # URL: Engage does not return canonical event page URL in this endpoint.
-    # We'll use imageUrl or leave URL off.
+    if name and addr:
+        loc = f"{name}, {addr}".replace(" ,", ",").strip()
+    elif name:
+        loc = name.strip()
+    elif addr:
+        loc = addr.strip()
+    else:
+        loc = ""
+
+    # URL (Engage doesn't provide direct event link in this API)
     url = e.get("imageUrl")
 
-    # State block can mark events as Canceled
-    status_block = e.get("state") or {}
-    status = status_block.get("status")  # Approved, Canceled, etc.
-
-    # Canceled events → mark them with STATUS:CANCELLED
-    is_cancelled = status and status.lower() == "canceled"
+    # STATUS (Canceled events)
+    state = e.get("state") or {}
+    status = state.get("status")
+    is_cancelled = (status and status.lower() == "canceled")
 
     dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-
-    dtstart = zulu(start) if start else None
-    dtend   = zulu(end) if end else None
+    dtstart = zulu(start)
+    dtend   = zulu(end)
 
     lines = []
     lines.append("BEGIN:VEVENT")
@@ -97,7 +148,6 @@ def to_vevent(e):
         lines.append(f"LOCATION:{escape_ical(loc)}")
     if url:
         lines.append(f"URL:{url}")
-
     if is_cancelled:
         lines.append("STATUS:CANCELLED")
 
@@ -105,34 +155,15 @@ def to_vevent(e):
     return lines
 
 
-def fetch_events():
-    headers = {
-        "accept": "application/json",
-        "X-Engage-Api-Key": API_KEY
-    }
-
-    resp = requests.get(API_URL, headers=headers, timeout=30)
-
-    print("Status code:", resp.status_code)
-    print("Response snippet:", resp.text[:500])
-
-    resp.raise_for_status()
-    data = resp.json()
-
-    # Engage event list format:
-    # { skip, take, totalItems, items: [ ... ] }
-    if isinstance(data, dict) and "items" in data:
-        return data["items"]
-
-    return data
-
-
+# --------------------------------------------------------------------------
+# Build the Calendar
+# --------------------------------------------------------------------------
 
 def main():
     if not API_URL:
-        raise SystemExit("ENGAGE_API_URL is not set. Configure it as a GitHub Secret.")
+        raise SystemExit("ENGAGE_API_URL is not set!")
 
-    events = fetch_events()
+    events = fetch_all_events()
 
     lines = []
     lines.append("BEGIN:VCALENDAR")
@@ -147,10 +178,12 @@ def main():
     lines.append("END:VCALENDAR")
 
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+
+    with open(OUTPUT_PATH, "w", encoding="utf-8", newline="\r\n") as f:
         f.write("\r\n".join(lines))
 
-    print(f"Wrote {OUTPUT_PATH} with {len(events)} events (source tz hint: {TIMEZONE_HINT}).")
+    print(f"Wrote {OUTPUT_PATH} with {len(events)} events. Timezone hint: {TIMEZONE_HINT}")
+
 
 if __name__ == "__main__":
     main()
