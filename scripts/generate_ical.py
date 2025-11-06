@@ -76,20 +76,37 @@ def to_vevent(e):
     return lines
 
 def fetch_events():
-    headers = {}
-    if API_KEY:
-        # If your API uses a Bearer token, this is typical:
-        headers["Authorization"] = f"Bearer {API_KEY}"
+    headers = {
+        "accept": "application/json",
+        "X-Engage-Api-Key": API_KEY
+    }
 
     resp = requests.get(API_URL, headers=headers, timeout=30)
+    
+    # Print debugging information to GitHub Actions logs
+    print("Status code:", resp.status_code)
+    print("Response snippet:", resp.text[:500])
+
     resp.raise_for_status()
     data = resp.json()
 
-    # If the JSON wraps events, adjust here.
-    # For example: data = data.get("events", data)
-    if isinstance(data, dict) and "events" in data:
-        return data["events"]
+    # Engage wraps results several layers deep.
+    # Schema:
+    # {
+    #   "result": {
+    #       "data": [ ...events... ],
+    #       "page": 1,
+    #       "pageSize": 20
+    #   }
+    # }
+    if isinstance(data, dict) and "result" in data:
+        result = data["result"]
+        if isinstance(result, dict) and "data" in result:
+            return result["data"]
+
+    # Fallback
     return data
+
 
 def main():
     if not API_URL:
