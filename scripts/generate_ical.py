@@ -32,48 +32,78 @@ def escape_ical(text):
         .replace("\n", "\\n")
     )
 
+import re
+from html import unescape
+
+def strip_html(html):
+    """Remove HTML tags & decode entities."""
+    if not html:
+        return ""
+    # Remove tags
+    text = re.sub(r'<[^>]+>', '', html)
+    # Decode HTML entities (&nbsp;, etc.)
+    return unescape(text).strip()
+
+
 def to_vevent(e):
-    # Adjust these keys to match your Engage API shape.
-    eid         = e.get("id") or e.get("eventId") or e.get("uuid")
-    title       = e.get("title") or e.get("name") or ""
-    description = e.get("description") or ""
-    location    = e.get("location") or e.get("place") or ""
-    url         = e.get("url") or e.get("link")
-    start       = e.get("start") or e.get("startTime") or e.get("startsAt")
-    end         = e.get("end") or e.get("endTime") or e.get("endsAt")
-    updated     = e.get("updatedAt") or e.get("modifiedAt") or e.get("lastModified")
+    eid     = e.get("id")
+    title   = e.get("name") or ""
+    desc    = strip_html(e.get("description") or "")
+    start   = e.get("startsOn")
+    end     = e.get("endsOn")
 
-    dtstamp = zulu(updated) or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    dtstart = zulu(start)
-    dtend   = zulu(end)
+    # location: use the Engage address block
+    address = e.get("address") or {}
+    location_name = address.get("name")
+    location_addr = address.get("address")
+    loc = ""
+    if location_name and location_addr:
+        loc = f"{location_name}, {location_addr}"
+    elif location_name:
+        loc = location_name
+    elif location_addr:
+        loc = location_addr
 
-    uid_domain = os.environ.get("UID_DOMAIN", "fairmontstate.edu")
-    uid = f"{eid}@{uid_domain}" if eid else f"{dtstamp}@{uid_domain}"
+    # URL: Engage does not return canonical event page URL in this endpoint.
+    # We'll use imageUrl or leave URL off.
+    url = e.get("imageUrl")
+
+    # State block can mark events as Canceled
+    status_block = e.get("state") or {}
+    status = status_block.get("status")  # Approved, Canceled, etc.
+
+    # Canceled events → mark them with STATUS:CANCELLED
+    is_cancelled = status and status.lower() == "canceled"
+
+    dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+    dtstart = zulu(start) if start else None
+    dtend   = zulu(end) if end else None
 
     lines = []
     lines.append("BEGIN:VEVENT")
-    lines.append(f"UID:{uid}")
+    lines.append(f"UID:{eid}@fairmontstate.edu")
     lines.append(f"DTSTAMP:{dtstamp}")
 
-    # If you ever need date-only all-day events, add a branch here (VALUE=DATE)
     if dtstart:
         lines.append(f"DTSTART:{dtstart}")
     if dtend:
         lines.append(f"DTEND:{dtend}")
 
     lines.append(f"SUMMARY:{escape_ical(title)}")
-    if description:
-        lines.append(f"DESCRIPTION:{escape_ical(description)}")
-    if location:
-        lines.append(f"LOCATION:{escape_ical(location)}")
+    if desc:
+        lines.append(f"DESCRIPTION:{escape_ical(desc)}")
+    if loc:
+        lines.append(f"LOCATION:{escape_ical(loc)}")
     if url:
         lines.append(f"URL:{url}")
-    # If your API provides recurrence (RRULE), include it here:
-    # if e.get("rrule"):
-    #     lines.append(f"RRULE:{e['rrule']}")
+
+    if is_cancelled:
+        lines.append("STATUS:CANCELLED")
 
     lines.append("END:VEVENT")
     return lines
+
 
 def fetch_events():
     headers = {
@@ -89,13 +119,13 @@ def fetch_events():
     resp.raise_for_status()
     data = resp.json()
 
-    # Your endpoint returns:
-    # { skip, take, totalItems, items: [...] }
+    # Engage event list format:
+    # { skip, take, totalItems, items: [ ... ] }
     if isinstance(data, dict) and "items" in data:
         return data["items"]
 
-    # Fallback
     return data
+
 
 
 def main():
