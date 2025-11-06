@@ -1,0 +1,66 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Fairmont State//Engage iCal//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:11007825@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Student Government Meeting
+DESCRIPTION:<p>The Fairmont State University Student Government Association (SGA) holds regular meetings to discuss campus initiatives\, student concerns\, and upcoming events that impact the university community. These meetings provide a platform for student leaders to collaborate\, advocate for their peers\, and work alongside faculty\, staff\, and administrators to enhance the student experience.&nbsp\;</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11050609@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:DIY Hanging Essential Oil Bottles 
+DESCRIPTION:<p>Come out to Falcon Center Main Street and create your own Hanging Essential Oil bottle.&nbsp\;</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11091784@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Test Event
+DESCRIPTION:<p>Testing Check In&nbsp\;</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11144799@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Liquid Nitrogen Ice Cream
+DESCRIPTION:<p>The process is simple: we put cream in a bowl\, add the ingredients\, and the blast it with liquid nitrogen. Beautiful clouds of vapor billow from the bowl\, roll across the table and cascade over the edge. The liquid nitrogen freezes it so fast that the ice crystals don&rsquo\;t get a chance to grow and the resulting ice cream is the smoothest\, creamiest and freshest you&rsquo\;ll ever experience. It is amazing to watch and tastes incredible. Private Island Ice Cream isn&rsquo\;t just ice cream\, it&rsquo\;s ice cream with a show!</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11152127@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Casino City 
+DESCRIPTION:<p>Get ready for the ultimate high-stakes experience at <strong data-start="85" data-end="113">Casino City Extravaganza</strong>! Step into a world of glamour\, excitement\, and non-stop entertainment as we bring the thrill of Vegas to your Fairmont State University! Whether you&rsquo\;re a seasoned player or a first-time visitor\, enjoy a dazzling night filled with poker\, blackjack\, roulette\, and more!&nbsp\;</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11157141@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:DIY Air Fresheners 
+DESCRIPTION:<p>Create your own air freshener!&nbsp\;</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11187528@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:ThinkFast Trivia
+DESCRIPTION:<p>Get ready to put your brain to the test with ThinkFast Trivia! Challenge yourself with fun and exciting questions\, show off your knowledge\, and race against the clock for a chance to win big. The top trivia master walks away with an impressive $200.00 prize. Are you quick enough to ThinkFast and claim the victory? Dive into the game and find out! 🧠💡💰</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11200308@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Essential Oil Bottles 
+DESCRIPTION:<p>Stress Less week-making Essential Oil Bottles.</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11200319@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Stress Ball Event
+DESCRIPTION:<p>Making stress Balls</p>
+END:VEVENT
+BEGIN:VEVENT
+UID:11200380@fairmontstate.edu
+DTSTAMP:20251106T231136Z
+SUMMARY:Don't Crumbl Under Stress
+DESCRIPTION:<p>Free Crumbl Cookies!</p>
+END:VEVENT
+END:VCALENDAR
