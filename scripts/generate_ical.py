@@ -2,13 +2,19 @@ import os
 import requests
 import re
 from html import unescape
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from dateutil import parser
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 OUTPUT_PATH = os.environ.get("OUTPUT_PATH", "docs/calendar.ics")
 API_URL = os.environ.get("ENGAGE_API_URL")        # Full Engage URL with query params
 API_KEY = os.environ.get("ENGAGE_API_KEY", "")   # X-Engage-Api-Key
 TIMEZONE_HINT = os.environ.get("TIMEZONE_HINT", "UTC")
+WINDOW_DAYS = int(os.environ.get("WINDOW_DAYS", "30"))
+
+MAX_PAGES = 200   # Runaway-pagination guard
+FALLBACK_DTSTAMP = "19700101T000000Z"
 
 
 # --------------------------------------------------------------------------
@@ -54,25 +60,53 @@ def strip_html(html):
     return " ".join(text.split()).strip()
 
 
+def parse_utc(dt_str):
+    """Parse an Engage ISO timestamp to an aware UTC datetime, or None."""
+    if not dt_str:
+        return None
+    try:
+        dt = parser.isoparse(dt_str)
+    except (ValueError, OverflowError):
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 # --------------------------------------------------------------------------
 # Fetch All Pages of Events from Engage
 # --------------------------------------------------------------------------
 
-def fetch_all_events():
+def fetch_all_events(now):
     """Engage paginates: skip, take, totalItems. We fetch all pages."""
     headers = {
         "accept": "application/json",
         "X-Engage-Api-Key": API_KEY
     }
 
+    session = requests.Session()
+    retry = Retry(
+        total=3,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+    )
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.mount("http://", HTTPAdapter(max_retries=retry))
+
+    base_url = API_URL
+    # API_URL is a secret that already embeds query params; don't duplicate
+    if "endsAfter" not in API_URL:
+        base_url += f"&endsAfter={now.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+
     events = []
     skip = 0
     take = 50   # You can adjust; 50 is safe
 
-    while True:
-        paged_url = f"{API_URL}&skip={skip}&take={take}"
+    for _ in range(MAX_PAGES):
+        paged_url = f"{base_url}&skip={skip}&take={take}"
 
-        resp = requests.get(paged_url, headers=headers, timeout=30)
+        resp = session.get(paged_url, headers=headers, timeout=30)
         print(f"Fetching: skip={skip}, status={resp.status_code}")
 
         if resp.status_code != 200:
@@ -81,14 +115,25 @@ def fetch_all_events():
 
         data = resp.json()
 
-        items = data.get("items", [])
+        if not isinstance(data, dict) or "items" not in data:
+            raise SystemExit(
+                f"Unexpected API response shape at skip={skip}: "
+                "expected a JSON object with an 'items' key."
+            )
+
+        items = data["items"]
         events.extend(items)
+
+        if not items:
+            break
 
         total = data.get("totalItems", len(items))
         skip += take
 
         if skip >= total:
             break
+    else:
+        print(f"Warning: hit {MAX_PAGES}-page cap; stopping pagination.")
 
     print(f"Fetched {len(events)} events total.")
     return events
@@ -97,6 +142,14 @@ def fetch_all_events():
 # --------------------------------------------------------------------------
 # Create VEVENT Blocks
 # --------------------------------------------------------------------------
+
+def event_dtstamp(e):
+    """Deterministic DTSTAMP (never the current time, so reruns don't churn)."""
+    for key in ("modifiedOn", "lastModified", "modifiedOnUtc", "startsOn"):
+        if parse_utc(e.get(key)) is not None:
+            return zulu(e.get(key))
+    return FALLBACK_DTSTAMP
+
 
 def to_vevent(e):
     eid   = e.get("id")
@@ -127,7 +180,7 @@ def to_vevent(e):
     status = state.get("status")
     is_cancelled = (status and status.lower() == "canceled")
 
-    dtstamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    dtstamp = event_dtstamp(e)
     dtstart = zulu(start)
     dtend   = zulu(end)
 
@@ -159,11 +212,45 @@ def to_vevent(e):
 # Build the Calendar
 # --------------------------------------------------------------------------
 
+def sort_key(e):
+    """Sort by (DTSTART string, UID string); events with no start sort last."""
+    start = parse_utc(e.get("startsOn"))
+    dtstart = start.strftime("%Y%m%dT%H%M%SZ") if start else "~"
+    return (dtstart, str(e.get("id")))
+
+
 def main():
     if not API_URL:
         raise SystemExit("ENGAGE_API_URL is not set!")
 
-    events = fetch_all_events()
+    now = datetime.now(timezone.utc)
+    window_end = now + timedelta(days=WINDOW_DAYS)
+
+    events = fetch_all_events(now)
+
+    # ----------------------------------------------------------------------
+    # Date Window Filtering
+    # ----------------------------------------------------------------------
+
+    kept = []
+    skipped_unparseable = 0
+
+    for e in events:
+        start = parse_utc(e.get("startsOn"))
+        if start is None:
+            skipped_unparseable += 1
+            continue
+        # Missing/unparseable end falls back to start; >= now keeps in-progress events
+        end = parse_utc(e.get("endsOn")) or start
+        if end >= now and start < window_end:
+            kept.append(e)
+
+    kept.sort(key=sort_key)
+
+    print(f"Fetched {len(events)} events, kept {len(kept)} "
+          f"within the next {WINDOW_DAYS} days.")
+    if skipped_unparseable:
+        print(f"Skipped {skipped_unparseable} events with missing/unparseable startsOn.")
 
     lines = []
     lines.append("BEGIN:VCALENDAR")
@@ -172,7 +259,7 @@ def main():
     lines.append("CALSCALE:GREGORIAN")
     lines.append("METHOD:PUBLISH")
 
-    for e in events:
+    for e in kept:
         lines.extend(to_vevent(e))
 
     lines.append("END:VCALENDAR")
@@ -182,7 +269,7 @@ def main():
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="\r\n") as f:
         f.write("\r\n".join(lines))
 
-    print(f"Wrote {OUTPUT_PATH} with {len(events)} events. Timezone hint: {TIMEZONE_HINT}")
+    print(f"Wrote {OUTPUT_PATH} with {len(kept)} events. Timezone hint: {TIMEZONE_HINT}")
 
 
 if __name__ == "__main__":

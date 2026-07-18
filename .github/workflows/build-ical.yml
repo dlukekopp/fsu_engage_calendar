@@ -9,8 +9,14 @@ on:
       - "scripts/**"
       - ".github/workflows/build-ical.yml"
 
+# Avoid overlapping runs racing on the commit step
+concurrency:
+  group: build-ical
+  cancel-in-progress: true
+
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build-ical:
@@ -34,6 +40,7 @@ jobs:
           ENGAGE_API_URL: ${{ secrets.ENGAGE_API_URL }}
           ENGAGE_API_KEY: ${{ secrets.ENGAGE_API_KEY }}
           UID_DOMAIN: "fairmontstate.edu"
+          WINDOW_DAYS: "30"
           OUTPUT_PATH: "docs/calendar.ics"
           TIMEZONE_HINT: "America/New_York"
         run: |
@@ -44,3 +51,12 @@ jobs:
         with:
           commit_message: "Update calendar.ics"
           file_pattern: docs/calendar.ics
+
+      # Resets GitHub's 60-day inactivity auto-disable timer for scheduled
+      # workflows, so the hourly cron survives long stretches with no commits
+      # (e.g. summer break)
+      - name: Keep scheduled workflow enabled
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X PUT repos/${{ github.repository }}/actions/workflows/build-ical.yml/enable
